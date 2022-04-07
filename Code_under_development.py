@@ -101,7 +101,10 @@ with col2:
         btnMsg = 'Download ' + str(df_active.shape[0]) + ' Records as CSV'
         st.download_button(btnMsg, csv, "DRS-file.csv", "text/csv", key='download-csv')
 data = df_active['ship_name'].value_counts()
+data2=df_active['ext_rsn'].value_counts()
 df_graph = pd.DataFrame({'ship_name':data.index, 'Count':data.values})
-st.write(df_graph)
-fig =px.bar(df_graph, x='ship_name', y='Count', height=400)
+fig =px.bar(df_graph, x='ship_name', y='Count', height=400, color='ship_name',
+            labels={"ship_name": "Vessel", "Count":"Number of def. past the extension date"})
+fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=400, color='ext_rsn')
 st.plotly_chart(fig)
+st.plotly_chart(fig2)
