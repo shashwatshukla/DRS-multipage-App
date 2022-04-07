@@ -9,10 +9,13 @@ disp_cols = ['ship_name', 'dt_ocurred', 'target_dt', 'done_dt', 'ser_no', 'nc_de
              'final_action_ship', 'final_action_ship_dt', 'co_eval',
              'reason_rc', 'corr_action', 'rpt_by', 'insp_by', 'insp_detail', 'update_by', 'update_dt',
              'ext_dt', 'ext_rsn', 'req_num', 'ext_cmnt', 'sys_code', 'eq_code']
+#_______________Data collection_______________________
 conn = sq.connect(db)
 df_DRS = pd.read_sql_query(f'select * from drsend', conn) # get DR sender data
 df_vsl = pd.read_sql_query(f'select * from vessels', conn)# get vessel data
 df_SI = pd.read_sql_query(f'select * from si', conn) # Get SI details
+
+#_________________Data cleaning_________________________
 df_DRS[['delay_hr', 'downtime_hr', 'VET_risk']] = df_DRS[['delay_hr', 'downtime_hr', 'VET_risk']].apply(pd.to_numeric,errors='coerce',axis=1) #convert to numeric
 df_DRS = df_DRS.loc[df_DRS['DRS_ID'].str.startswith('T', na=False)]  # remove all cargo DRS id
 df_DRS['vsl_imo'] = df_DRS['vsl_imo'].astype(int) # convert IMO number to int

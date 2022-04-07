@@ -2,4 +2,5 @@ plotly
 pandas
 streamlit
 xlwings
-sqlite3
+pysqlite3
+streamlit-aggrid
