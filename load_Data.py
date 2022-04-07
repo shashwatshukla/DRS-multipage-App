@@ -2,7 +2,7 @@
 import pandas as pd
 import streamlit as st
 import sqlite3
-import pyodbc
+# import pyodbc
 @st.experimental_memo
 #@st.cache (allow_output_mutation=True)
 def get_data(db, tbl):
