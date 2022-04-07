@@ -5,7 +5,7 @@ import datetime
 
 st.set_page_config(page_title='DRS extended', layout='wide')
 db = 'mms_master.sqlite'
-#___________________________DEclarations_____________________________
+#___________________________Declarations_____________________________
 disp_cols = ['ship_name', 'ser_no', 'dt_ocurred', 'target_dt', 'nc_detail',
              'ext_dt', 'ext_rsn', 'req_num', 'ext_cmnt', 'est_cause_ship',
              'init_action_ship', 'init_action_ship_dt',
@@ -15,7 +15,7 @@ disp_cols = ['ship_name', 'ser_no', 'dt_ocurred', 'target_dt', 'nc_detail',
 #_______________Data collection_______________________
 conn = sq.connect(db)
 df_DRS = pd.read_sql_query('select * from drsend', conn) # get DR sender data
-df_vsl = pd.read_sql_query("select vslName, vsl_imo from vessels where statusActiveInactive = '1' "
+df_vsl = pd.read_sql_query("select vslName, vsl_imo, vslTechSI, vslMarSI from vessels where statusActiveInactive = '1' "
                            "and (vslFleet = '1' or vslFleet = '2' or vslFleet = '3')", conn)# Get active tanker fleet vessel names and IMO
 df_SI = pd.read_sql_query("select SI_UID, siEmail from si where statusActiveInactive = '1'", conn) # Get active SI
 
