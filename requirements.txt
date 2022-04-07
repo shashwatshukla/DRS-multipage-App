@@ -4,3 +4,4 @@ streamlit
 xlwings
 pysqlite3
 streamlit-aggrid
+chart-studio
