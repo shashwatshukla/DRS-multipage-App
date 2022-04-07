@@ -30,16 +30,3 @@ df_DRS.drop(df_DRS.index[df_DRS['statusActiveInactive'] == 0], inplace=True)
 mask = (df_DRS['ext_dt'] < pd.to_datetime('today'))
 df_DRS = df_DRS.loc[mask]
 st.write(df_DRS)
-
-
-#df_vsl_state = df_vsl[['vslIMO', 'statusActiveInactive']]
-# dtype = df_DRS.dtypes
-# df_extdt = df_DRS[df_DRS.ext_dt != '']  # remove rows with no ext date
-# df_extdt = df_extdt.query('status in ("OPEN")')
-# df_extdt['ext_dt'] = pd.to_datetime(df_extdt['ext_dt'], format='%Y-%m-%d', errors='coerce')
-#
-# # print(df_DRS.columns)
-# today = datetime.datetime.today().date()
-
-
-
