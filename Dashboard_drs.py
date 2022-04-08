@@ -96,6 +96,6 @@ def dashboard():
             df_graph = pd.DataFrame({'ship_name': data.index, 'Count': data.values})
             fig = px.bar(df_graph, x='ship_name', y='Count', height=400, width=1200, color='Count',
                          labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"})
-            fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=900, width=800, color='ext_rsn')
+            fig2 = px.bar(df_active, y=["ship_name"], x="ext_rsn", height=500, width=1200, color='ext_rsn')
             st.plotly_chart(fig)
             st.plotly_chart(fig2)
