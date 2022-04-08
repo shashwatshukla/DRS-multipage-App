@@ -1,11 +1,8 @@
 import datetime
 import plotly.express as px
-
 import streamlit as st
 import pandas as pd
 import sqlite3 as sq
-from st_aggrid import AgGrid, DataReturnMode, GridUpdateMode, JsCode
-from st_aggrid.grid_options_builder import GridOptionsBuilder
 def dashboard():
 
     db = 'mms_master.sqlite'
@@ -64,8 +61,8 @@ def dashboard():
     # _______________________UI elements and logic_____________________
 
     filterContainer = st.expander('Data for overdue def past extension date')
-    col1, col2, col3 = filterContainer.columns(3)
-    with col2:
+    col1, col2 = filterContainer.columns(2)
+    with col1:
         fltName = st.multiselect('Select the Fleet', options=fltList.keys(), default='Tanker1')
 
         with filterContainer:
@@ -77,19 +74,7 @@ def dashboard():
             # fig = px.bar(df_sel_vsl_counts, x="ship_name", y=["Closed", "Open"], barmode='stack', height=400)
             # st.plotly_chart(fig)
 
-        with col1:
-            dt_today = datetime.date.today()
-            # dateFmTo = st.date_input('Select dates (ignore any errors when selecting dates)',
-            #                          [(dt_today - datetime.timedelta(days=365 * 1)), dt_today])
-            # startDt = dateFmTo[0]
-            # endDt = dateFmTo[1]
-            # # print(dateFmTo)
-            # # dt_slider = st.slider('choose dates', [datetime.date(year=2021,month=1,day=1),dt_today])
-            # mask = (df['dt_ocurred'] > str(startDt)) & (df['dt_ocurred'] <= str(endDt))
-            # dfSelected = dfSelected[mask]
-            # rptBy = st.multiselect('Reported by', options=sorted(dfSelected['rpt_by'].unique()),
-            #                        default=['C MMS', 'F Vessel'])
-            # overDueStat = st.multiselect('Overdue Status', options=['Yes', 'No'], default=['Yes', 'No'])
+
 
         with filterContainer:
             #  now filter the dataframe using all above filter settings
@@ -101,15 +86,15 @@ def dashboard():
             st.write(df_active[disp_cols], height=600)
             # TODO: get count of records for each unique vessel (for plot)
 
-        with col3:  # download button and file
+        with col2:  # download button and file
             csv = df_active.to_csv().encode('utf-8')  # write df to csv
             btnMsg = 'Download ' + str(df_active.shape[0]) + ' Records as CSV'
             st.download_button(btnMsg, csv, "DRS-file.csv", "text/csv", key='download-csv')
     data = df_active['ship_name'].value_counts()
     data2 = df_active['ext_rsn'].value_counts()
     df_graph = pd.DataFrame({'ship_name': data.index, 'Count': data.values})
-    fig = px.bar(df_graph, x='ship_name', y='Count', height=400, color='ship_name',
+    fig = px.bar(df_graph, x='ship_name', y='Count', height=400, width=1200, color='Count',
                  labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"})
-    fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=400, color='ext_rsn')
+    fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=400, width=1200, color='ext_rsn')
     st.plotly_chart(fig)
     st.plotly_chart(fig2)
