@@ -60,7 +60,7 @@ def dashboard():
 
     # _______________________UI elements and logic_____________________
 
-    filterContainer = st.expander('Data for overdue def past extension date')
+    filterContainer = st.expander('Overdue deficiencies past extension date')
     col1, col2 = filterContainer.columns(2)
     with col1:
         fltName = st.multiselect('Select the Fleet', options=fltList.keys(), default='Tanker1')
