@@ -90,11 +90,12 @@ def dashboard():
             csv = df_active.to_csv().encode('utf-8')  # write df to csv
             btnMsg = 'Download ' + str(df_active.shape[0]) + ' Records as CSV'
             st.download_button(btnMsg, csv, "DRS-file.csv", "text/csv", key='download-csv')
-    data = df_active['ship_name'].value_counts()
-    data2 = df_active['ext_rsn'].value_counts()
-    df_graph = pd.DataFrame({'ship_name': data.index, 'Count': data.values})
-    fig = px.bar(df_graph, x='ship_name', y='Count', height=400, width=1200, color='Count',
-                 labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"})
-    fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=900, width=800, color='ext_rsn')
-    st.plotly_chart(fig)
-    st.plotly_chart(fig2)
+        with filterContainer:
+            data = df_active['ship_name'].value_counts()
+            data2 = df_active['ext_rsn'].value_counts()
+            df_graph = pd.DataFrame({'ship_name': data.index, 'Count': data.values})
+            fig = px.bar(df_graph, x='ship_name', y='Count', height=400, width=1200, color='Count',
+                         labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"})
+            fig2 = px.bar(df_active, x=["ship_name"], y="ext_rsn", height=900, width=800, color='ext_rsn')
+            st.plotly_chart(fig)
+            st.plotly_chart(fig2)
