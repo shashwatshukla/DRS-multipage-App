@@ -3,8 +3,12 @@ import plotly.express as px
 import streamlit as st
 import pandas as pd
 import sqlite3 as sq
-def dashboard():
+from st_aggrid import AgGrid, DataReturnMode, GridUpdateMode, JsCode
+from st_aggrid.grid_options_builder import GridOptionsBuilder
 
+
+def dashboard():
+    global allShips  # to hold list of all tanker shipnames for making graphs
     db = 'mms_master.sqlite'
     # ___________________________Declarations_____________________________
     disp_cols = ['ship_name', 'ser_no', 'dt_ocurred', 'target_dt', 'nc_detail',
@@ -31,7 +35,8 @@ def dashboard():
                  df_SI.iterrows()}  # convert SI uniqeid and email to dictionary dunno why i did this
     imoactive = (df_vsl['vsl_imo'])  # Tuple of active tanker vessel IMO
     active = df_DRS['vsl_imo'].isin(imoactive)
-    df_active = df_DRS[active]
+    df_active = df_DRS[active]  # Active tanker vessels in dataframe
+    allShips = pd.DataFrame(df_active['ship_name'].unique())  # For using in graph
     df_active = df_active[df_active.ext_dt != '']  # remove rows with no ext date
     df_active['ext_dt'] = pd.to_datetime(df_active['ext_dt'], format='%Y-%m-%d',
                                          errors='coerce')  # Convert date as str to datetime
@@ -60,6 +65,10 @@ def dashboard():
 
     # _______________________UI elements and logic_____________________
 
+    # ____________________AGgrid_________________
+
+    grid_height = st.sidebar.number_input("Grid height", min_value=200, max_value=800, value=300)
+
     filterContainer = st.expander('Overdue deficiencies past extension date')
     col1, col2 = filterContainer.columns(2)
     with col1:
@@ -74,8 +83,6 @@ def dashboard():
             # fig = px.bar(df_sel_vsl_counts, x="ship_name", y=["Closed", "Open"], barmode='stack', height=400)
             # st.plotly_chart(fig)
 
-
-
         with filterContainer:
             #  now filter the dataframe using all above filter settings
             df_active = df_active.query("ship_name == @vslName")  # & status == @statusNow & brkdn_tf == @brkdn "
@@ -83,19 +90,55 @@ def dashboard():
             # "& coc_tf == @coc & overdue == @overDueStat & Severity == @severity & rpt_by == @rptBy")
 
             # dfFiltered = dfFiltered[dfFiltered['nc_detail'].str.contains(searchText, regex=False)]  # search on text entered
-            st.write(df_active[disp_cols], height=600)
-            # TODO: get count of records for each unique vessel (for plot)
+            df_active = df_active[disp_cols]
+            gb = GridOptionsBuilder.from_dataframe(df_active)
+            # gb.configure_selection(selection_mode='multiple', use_checkbox=True, groupSelectsChildren=True,
+            # groupSelectsFiltered=True)
+            gb.configure_pagination()
+            gb.configure_side_bar()
+            gb.configure_default_column(groupable=False, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
 
+            gridOptions = gb.build()
+            # st.header(tbl_name+' Data')
+
+            response = AgGrid(df_active, editable=True, fit_columns_on_grid_load=False, conversion_errors='coerce',
+                              gridOptions=gridOptions, enable_enterprise_modules=True,
+                              height=grid_height)
+            # st.write("data")
+
+            # st.write(df_active[disp_cols], height=600)
+
+        #
         with col2:  # download button and file
             csv = df_active.to_csv().encode('utf-8')  # write df to csv
             btnMsg = 'Download ' + str(df_active.shape[0]) + ' Records as CSV'
             st.download_button(btnMsg, csv, "DRS-file.csv", "text/csv", key='download-csv')
+        # _____________________________Graphs Section______________________________
         with filterContainer:
+            allShips['Count'] = 0  # add col Count with val 0 in all cells
+            allShips.columns = ['ship_name', 'Count']  # Rename columns
+
             data = df_active['ship_name'].value_counts()
             data2 = df_active['ext_rsn'].value_counts()
-            df_graph = pd.DataFrame({'ship_name': data.index, 'Count': data.values})
-            fig = px.bar(df_graph, x='ship_name', y='Count', height=400, width=1200, color='Count',
-                         labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"})
-            fig2 = px.bar(df_active, y=["ship_name"], x="ext_rsn", height=500, width=1200, color='ext_rsn')
+            df_graph = pd.DataFrame({'ship_name': data.index,
+                                     'Count': data.values})  # create dataframe of count of opn overdue def and ship name
+            df_xaxis = allShips.append(df_graph, sort=True)  # merge dataframes to include ships with no overdue def
+            df_xaxis.sort_values(by='ship_name')  # sort
+            fig = px.bar(df_xaxis, x='ship_name', y='Count', height=400, width=1200, color='Count',
+                         labels={"ship_name": "Vessel", "Count": "Number of def. past the extension date"},
+                         title="<b>Count of extended overdue not closed till today</b>",
+                         color_continuous_scale=px.colors.sequential.Blugrn)
+            fig2 = px.bar(df_active, y=["ship_name"], x="ext_rsn", height=500, width=1200, color='ext_rsn',
+                          title="<b>Reason for Extended overdue not closed till today</b>",
+                          color_discrete_sequence=px.colors.qualitative.Pastel)
+            fig.update_layout(legend_orientation='h')
+            fig.update_xaxes(categoryorder='array',
+                             categoryarray=sorted(allShips['ship_name']))
+            fig2.update_layout(legend_orientation='h')
+            fig2.update_layout()
             st.plotly_chart(fig)
             st.plotly_chart(fig2)
+            fig3 = px.colors.sequential.swatches()
+            fig4 = px.colors.qualitative.swatches()
+            st.plotly_chart(fig3)
+            st.plotly_chart(fig4)
